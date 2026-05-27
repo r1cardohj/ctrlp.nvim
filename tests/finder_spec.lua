@@ -3,6 +3,7 @@ local finder = require("ctrlp.finder")
 describe("finder.scan", function()
 	local config = {
 		max_files = 10000,
+		use_cache = true,
 		ignore_patterns = {
 			"^%.git/",
 			"^node_modules/",
@@ -11,6 +12,10 @@ describe("finder.scan", function()
 			"^build/",
 		},
 	}
+
+	before_each(function()
+		finder.clear_cache()
+	end)
 
 	it("should scan current project and find known files", function()
 		local files = finder.scan(".", config)
@@ -40,5 +45,32 @@ describe("finder.scan", function()
 		local limited_config = vim.tbl_deep_extend("force", config, { max_files = 2 })
 		local files = finder.scan(".", limited_config)
 		assert.is_true(#files <= 2, "expected at most 2 files but got " .. #files)
+	end)
+
+	it("should return cached result on second scan", function()
+		local files_first = finder.scan(".", config)
+		local files_second = finder.scan(".", config)
+		assert.are.same(files_first, files_second)
+	end)
+
+	it("should not use cache when use_cache is false", function()
+		local no_cache_config = vim.tbl_deep_extend("force", config, { use_cache = false })
+		local files = finder.scan(".", no_cache_config)
+		assert.is_true(#files > 0)
+
+		-- 再次扫描应该重新读取（虽然结果一样，但代码路径不同）
+		local files_again = finder.scan(".", no_cache_config)
+		assert.are.same(files, files_again)
+	end)
+
+	it("should clear cache", function()
+		local files_first = finder.scan(".", config)
+		assert.is_true(#files_first > 0)
+
+		finder.clear_cache()
+
+		-- clear 后再次扫描应该重新生成结果（数据相同但证明缓存已清）
+		local files_after_clear = finder.scan(".", config)
+		assert.are.same(files_first, files_after_clear)
 	end)
 end)

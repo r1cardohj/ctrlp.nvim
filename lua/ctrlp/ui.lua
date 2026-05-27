@@ -14,6 +14,7 @@ local state = {
 	selected = 1,
 	query = "",
 	config = {},
+	dir = nil,
 }
 
 local function close()
@@ -89,9 +90,10 @@ local function move_selection(delta)
 	render_results()
 end
 
-function M.open(files, config)
+function M.open(files, config, dir)
 	state.files = files
 	state.config = config
+	state.dir = dir
 	state.query = ""
 	state.selected = 1
 	state.results = {}
@@ -159,6 +161,14 @@ function M.open(files, config)
 	end, opts)
 	vim.keymap.set("i", "<Up>", function()
 		move_selection(-1)
+	end, opts)
+	vim.keymap.set("i", "<F5>", function()
+		local finder = require("ctrlp.finder")
+		finder.clear_cache()
+		state.files = finder.scan(state.dir, state.config)
+		state.results = matcher.fuzzy_match(state.files, state.query)
+		state.selected = 1
+		render_results()
 	end, opts)
 
 	vim.api.nvim_create_autocmd("TextChangedI", {
