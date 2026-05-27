@@ -40,6 +40,7 @@ cd ~/.config/nvim/lua && ln -s /path/to/ctrlp.nvim ./ctrlp.nvim
 | `<CR>` | Open selected file |
 | `<C-n>` / `<C-p>` | Navigate down / up |
 | `<Down>` / `<Up>` | Same as above |
+| `<F5>` | Refresh cache and rescan directory |
 | `<Esc>` / `<C-c>` | Close |
 
 ## Preview
@@ -51,6 +52,7 @@ cd ~/.config/nvim/lua && ln -s /path/to/ctrlp.nvim ./ctrlp.nvim
 ```lua
 require("ctrlp").setup({
   max_files = 10000,
+  use_cache = true,    -- keep scan results in memory for instant reopen
   ignore_patterns = {
     "^%.git/",
     "^node_modules/",
@@ -59,6 +61,23 @@ require("ctrlp").setup({
     "^build/",
   },
 })
+```
+
+## Caching
+
+This plugin uses a **semi-manual caching strategy** — the same philosophy as the original ctrlp.vim:
+
+- The first `<C-p>` scans the directory tree (may take a moment on large projects)
+- Subsequent openings in the same Neovim session are **instant** because the file list is kept in memory
+- The cache does **not** watch the filesystem. If you create, delete, or rename files, press `<F5>` inside the finder window to purge the cache and rescan
+- Or run `:CtrlPClearCache` from anywhere
+
+**Why not auto-refresh?** Real-time directory monitoring (`inotify` / `FSEvents`) consumes kernel resources and adds cross-platform complexity. For a plugin that values simplicity, a manual refresh is a fair trade-off — you control when to pay the scanning cost.
+
+If you prefer to disable caching entirely:
+
+```lua
+require("ctrlp").setup({ use_cache = false })
 ```
 
 ## Vision
@@ -73,7 +92,7 @@ This project aims to be what ctrlp.vim would have been if it were born in the Ne
   - [x] Basic test coverage
 
 - **Phase 2 — the ctrlp essentials**
-  - [ ] Cached file list (scan once, instant reopen)
+  - [x] Cached file list (scan once, instant reopen)
   - [ ] Project root detection (`.git`, `package.json`, `go.mod`, ...)
   - [ ] Buffer mode — switch between open buffers
   - [ ] MRU mode — reopen recently used files

@@ -8,6 +8,7 @@ M.version = "0.0.1"
 
 M.config = {
 	max_files = 10000,
+	use_cache = true,
 	ignore_patterns = {
 		"^%.git/",
 		"^node_modules/",
@@ -26,7 +27,7 @@ end
 function M.open()
 	local cwd = vim.fn.getcwd()
 	local files = finder.scan(cwd, M.config)
-	ui.open(files, M.config)
+	ui.open(files, M.config, cwd)
 end
 
 return M

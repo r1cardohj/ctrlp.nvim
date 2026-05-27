@@ -1,6 +1,14 @@
 local M = {}
 
+local cache = {}
+
 function M.scan(dir, config)
+	local real_dir = vim.loop.fs_realpath(dir) or dir
+
+	if config.use_cache ~= false and cache[real_dir] then
+		return cache[real_dir]
+	end
+
 	local files = {}
 	local count = 0
 	local visited = {}
@@ -55,7 +63,16 @@ function M.scan(dir, config)
 	end
 
 	scan_recursive(dir)
+
+	if config.use_cache ~= false then
+		cache[real_dir] = files
+	end
+
 	return files
+end
+
+function M.clear_cache()
+	cache = {}
 end
 
 return M
