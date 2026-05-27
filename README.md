@@ -93,6 +93,8 @@ This project aims to be what ctrlp.vim would have been if it were born in the Ne
 
 - **Phase 2 — the ctrlp essentials**
   - [x] Cached file list (scan once, instant reopen)
+  - [ ] `<C-d>` — copy selected file's directory into the prompt
+  - [ ] `<C-y>` — create new file (and parent directories) from the prompt
   - [ ] Project root detection (`.git`, `package.json`, `go.mod`, ...)
   - [ ] Buffer mode — switch between open buffers
   - [ ] MRU mode — reopen recently used files
