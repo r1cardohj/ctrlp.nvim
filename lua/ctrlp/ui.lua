@@ -60,6 +60,12 @@ local function render_results()
 			priority = 100,
 		})
 	end
+
+	-- Keep the selected item visible: move the window cursor to the selected
+	-- line so the floating window scrolls to follow it.
+	if state.win and vim.api.nvim_win_is_valid(state.win) then
+		vim.api.nvim_win_set_cursor(state.win, { state.selected, 0 })
+	end
 end
 
 local function update_results()
@@ -136,7 +142,9 @@ function M.open(files, config, dir)
 	})
 
 	vim.api.nvim_win_set_option(state.prompt_win, "winhl", "Normal:Normal")
-	vim.api.nvim_win_set_option(state.win, "winhl", "Normal:Normal,CursorLine:CtrlPSelected")
+	-- Cursor is used to drive scrolling; blend it into the selected line so it
+	-- is not visible as a block cursor.
+	vim.api.nvim_win_set_option(state.win, "winhl", "Normal:Normal,CursorLine:CtrlPSelected,Cursor:CtrlPSelected")
 	vim.api.nvim_win_set_option(state.win, "cursorline", false)
 	vim.api.nvim_win_set_option(state.win, "scrolloff", 0)
 
