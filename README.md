@@ -50,7 +50,7 @@ Characters matched by your query are highlighted in the result list via the `Ctr
 
 ## Preview
 
-<img width="1197" height="678" alt="image" src="https://github.com/user-attachments/assets/4b2414de-7ebd-41bb-8e94-9782b66171ff" />
+<img width="1185" height="677" alt="image" src="https://github.com/user-attachments/assets/109111ec-e7af-4bab-9294-cbe8f6e591eb" />
 
 
 ## Setup
