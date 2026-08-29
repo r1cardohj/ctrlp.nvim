@@ -291,3 +291,86 @@ describe("ui mode switching", function()
 		assert.are.equal(" Files < Buffers > MRU ", text)
 	end)
 end)
+
+-- 匹配字符高亮：输入 query 后，结果行中匹配上的字符应加 CtrlPMatch 高亮
+-- （参照老 ctrlp.vim 的 CtrlPMatch）
+describe("ui match highlight", function()
+	local orig_files_collect
+	local ns = vim.api.nvim_create_namespace("ctrlp")
+
+	before_each(function()
+		orig_files_collect = modes.modes.files.collect
+		modes.modes.files.collect = function()
+			return { "lua/ctrlp/ui.lua" }
+		end
+	end)
+
+	after_each(function()
+		modes.modes.files.collect = orig_files_collect
+		for _, w in ipairs(vim.api.nvim_list_wins()) do
+			if vim.api.nvim_win_is_valid(w)
+				and vim.api.nvim_win_get_config(w).relative == "editor" then
+				vim.api.nvim_win_close(w, true)
+			end
+		end
+	end)
+
+	local function find_buffers()
+		local result_buf, prompt_buf
+		for _, w in ipairs(vim.api.nvim_list_wins()) do
+			local cfg = vim.api.nvim_win_get_config(w)
+			if cfg.relative == "editor" then
+				local buf = vim.api.nvim_win_get_buf(w)
+				if vim.bo[buf].buftype == "prompt" then
+					prompt_buf = buf
+				else
+					result_buf = buf
+				end
+			end
+		end
+		return result_buf, prompt_buf
+	end
+
+	local function type_query(prompt_buf, text)
+		vim.api.nvim_buf_set_lines(prompt_buf, 0, -1, false, { text })
+		vim.api.nvim_exec_autocmds("TextChangedI", { buffer = prompt_buf })
+	end
+
+	local function match_extmarks(result_buf)
+		local marks = {}
+		for _, m in ipairs(vim.api.nvim_buf_get_extmarks(result_buf, ns, 0, -1, { details = true })) do
+			if m[4].hl_group == "CtrlPMatch" then
+				table.insert(marks, { row = m[2], col = m[3], end_col = m[4].end_col })
+			end
+		end
+		return marks
+	end
+
+	it("highlights matched characters in result lines", function()
+		ui.open({}, ".")
+		local result_buf, prompt_buf = find_buffers()
+
+		-- 无 query 时没有匹配高亮
+		assert.are.same({}, match_extmarks(result_buf))
+
+		-- "lua/ctrlp/ui.lua" 匹配 "ui" → 位置 2 和 12（1-based），
+		-- 加上 2 字节前缀后列为 3/13（0-based）
+		type_query(prompt_buf, "ui")
+		local marks = match_extmarks(result_buf)
+		assert.are.same({
+			{ row = 0, col = 3, end_col = 4 },
+			{ row = 0, col = 13, end_col = 14 },
+		}, marks)
+	end)
+
+	it("clears match highlights when the query is cleared", function()
+		ui.open({}, ".")
+		local result_buf, prompt_buf = find_buffers()
+
+		type_query(prompt_buf, "ui")
+		assert.is_true(#match_extmarks(result_buf) > 0)
+
+		type_query(prompt_buf, "")
+		assert.are.same({}, match_extmarks(result_buf))
+	end)
+end)

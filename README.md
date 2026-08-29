@@ -46,6 +46,8 @@ cd ~/.config/nvim/lua && ln -s /path/to/ctrlp.nvim ./ctrlp.nvim
 | `<F5>` | Refresh cache and rescan directory |
 | `<Esc>` / `<C-c>` | Close |
 
+Characters matched by your query are highlighted in the result list via the `CtrlPMatch` highlight group (linked to `Special` by default — override it in your config to restyle).
+
 ## Preview
 
 <img width="1197" height="678" alt="image" src="https://github.com/user-attachments/assets/4b2414de-7ebd-41bb-8e94-9782b66171ff" />
