@@ -36,6 +36,12 @@ function M.scan(dir, config)
 		return false
 	end
 
+	-- A path is hidden when any of its components starts with a dot
+	-- (e.g. ".git", ".idea/foo.iml"). Mirrors ctrlp.vim's show_hidden.
+	local function is_hidden(path)
+		return path:match("^%.") ~= nil or path:match("/%.") ~= nil
+	end
+
 	local function scan_recursive(current)
 		local real = vim.loop.fs_realpath(current) or current
 		if visited[real] then
@@ -62,6 +68,10 @@ function M.scan(dir, config)
 			local rel = full:sub(#dir + 2)
 
 			if should_ignore(rel) then
+				goto continue
+			end
+
+			if not config.show_hidden and is_hidden(rel) then
 				goto continue
 			end
 
