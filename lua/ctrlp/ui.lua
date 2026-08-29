@@ -79,8 +79,12 @@ local function open_file()
 	if not item then
 		return
 	end
+	-- Results are relative to the scan root (state.dir), which may differ
+	-- from the pwd when root detection kicked in. Like ctrlp.vim, resolve
+	-- the selected file against the root, not the current directory.
+	local path = state.dir .. "/" .. item
 	close()
-	vim.cmd("edit " .. vim.fn.fnameescape(item))
+	vim.cmd("edit " .. vim.fn.fnameescape(path))
 end
 
 local function move_selection(delta)
