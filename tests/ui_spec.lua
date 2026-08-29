@@ -111,4 +111,31 @@ describe("ui result panel scrolling", function()
 
 		close_ui(result_win, prompt_buf)
 	end)
+
+	-- 回归测试：pwd 在子目录、扫描根在上级目录时，打开文件应相对扫描根
+	-- 解析（参照 ctrlp.vim 用缓存根路径拼接条目），而不是相对 pwd。
+	it("opens the selected file relative to the scan root, not the cwd", function()
+		-- root/real_file.txt 存在；root/sub 是 pwd，下面并没有该文件
+		local root = vim.fn.tempname()
+		vim.fn.mkdir(root .. "/sub", "p")
+		local f = io.open(root .. "/real_file.txt", "w")
+		f:write("hello")
+		f:close()
+
+		local prev_cwd = vim.fn.getcwd()
+		vim.cmd("cd " .. vim.fn.fnameescape(root .. "/sub"))
+
+		ui.open({ "real_file.txt" }, {}, root)
+		local _, prompt_buf = find_windows()
+		local cr = keymap_callback(prompt_buf, "<CR>")
+		assert(cr, "<CR> keymap not found")
+		cr()
+
+		assert.equal(root .. "/real_file.txt", vim.api.nvim_buf_get_name(0))
+
+		-- cleanup
+		vim.cmd("bwipeout!")
+		vim.cmd("cd " .. vim.fn.fnameescape(prev_cwd))
+		vim.fn.delete(root, "rf")
+	end)
 end)
