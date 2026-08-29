@@ -37,9 +37,10 @@ cd ~/.config/nvim/lua && ln -s /path/to/ctrlp.nvim ./ctrlp.nvim
 |---|---|
 | `<C-p>` or `:CtrlP` | Open file finder |
 | `:CtrlPBuffer` | Open buffer finder |
+| `:CtrlPMRU` | Open MRU (recently used files) finder |
 | Type | Filter items in real time |
 | `<CR>` | Open selected item |
-| `<C-f>` / `<C-b>` | Switch mode (files ↔ buffers) without closing |
+| `<C-f>` / `<C-b>` | Switch mode (files ↔ buffers ↔ MRU) without closing |
 | `<C-n>` / `<C-p>` | Navigate down / up |
 | `<Down>` / `<Up>` | Same as above |
 | `<F5>` | Refresh cache and rescan directory |
@@ -83,6 +84,10 @@ This plugin uses a **semi-manual caching strategy** — the same philosophy as t
 - The cache does **not** watch the filesystem. If you create, delete, or rename files, press `<F5>` inside the finder window to purge the cache and rescan
 - Or run `:CtrlPClearCache` from anywhere
 
+## MRU
+
+MRU mode tracks files as you edit them (`BufEnter`), most recent first, capped at 250 entries — same as ctrlp.vim's `g:ctrlp_mruf_max`. Like ctrlp.vim's `<cache_dir>/mru/cache.txt`, the history is **persisted** to `stdpath("cache")/ctrlp/mru.txt` on `VimLeavePre` and restored in the next session. Files that no longer exist on disk are skipped.
+
 **Why not auto-refresh?** Real-time directory monitoring (`inotify` / `FSEvents`) consumes kernel resources and adds cross-platform complexity. For a plugin that values simplicity, a manual refresh is a fair trade-off — you control when to pay the scanning cost.
 
 If you prefer to disable caching entirely:
@@ -108,7 +113,7 @@ This project aims to be what ctrlp.vim would have been if it were born in the Ne
   - [ ] `<C-y>` — create new file (and parent directories) from the prompt
   - [x] Project root detection (`.git`, `package.json`, `go.mod`, ...)
   - [x] Buffer mode — switch between open buffers
-  - [ ] MRU mode — reopen recently used files
+  - [x] MRU mode — reopen recently used files
   - [ ] Mixed mode — files + buffers + MRU in one list
   - [x] `<C-f>` / `<C-b>` to cycle modes without closing the window
   - [ ] `<C-x>` / `<C-v>` / `<C-t>` to open in split / vsplit / tab
