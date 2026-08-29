@@ -54,4 +54,18 @@ function M.cycle(current, delta)
 	return M.order[((idx - 1 + delta) % #M.order) + 1]
 end
 
+--- Return the previous and next mode keys around `current` in the cycle
+--- order (used to display adjacent modes in the UI).
+function M.neighbors(current)
+	local idx = 1
+	for i, key in ipairs(M.order) do
+		if key == current then
+			idx = i
+			break
+		end
+	end
+	local n = #M.order
+	return M.order[((idx - 2) % n) + 1], M.order[(idx % n) + 1]
+end
+
 return M

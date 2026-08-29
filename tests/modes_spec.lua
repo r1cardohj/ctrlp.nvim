@@ -18,6 +18,24 @@ describe("modes", function()
 		end)
 	end)
 
+	describe("neighbors", function()
+		it("should return previous and next modes around current", function()
+			local prev, next_ = modes.neighbors("files")
+			assert.are.equal("buffers", prev)
+			assert.are.equal("buffers", next_)
+
+			prev, next_ = modes.neighbors("buffers")
+			assert.are.equal("files", prev)
+			assert.are.equal("files", next_)
+		end)
+
+		it("should fall back to the first mode for unknown modes", function()
+			local prev, next_ = modes.neighbors("nonexistent")
+			assert.are.equal("buffers", prev)
+			assert.are.equal("buffers", next_)
+		end)
+	end)
+
 	describe("buffers.collect", function()
 		local tmp_dir
 		local saved_bufs

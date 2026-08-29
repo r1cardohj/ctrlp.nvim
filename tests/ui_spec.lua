@@ -257,14 +257,25 @@ describe("ui mode switching", function()
 		end
 	end
 
-	it("shows the current mode name on the prompt window", function()
+	it("shows adjacent modes around the current mode on the prompt window", function()
+		local function title_segments()
+			local t = prompt_title()
+			local texts = {}
+			for _, seg in ipairs(t) do
+				table.insert(texts, seg[1])
+			end
+			return table.concat(texts), t
+		end
+
+		-- 形如 " Buffers < Files > Buffers "，当前模式高亮
 		ui.open({}, ".")
-		assert.are.same({ { " Files " } }, prompt_title())
+		local text, segments = title_segments()
+		assert.are.equal(" Buffers < Files > Buffers ", text)
+		assert.are.equal("CtrlPModeCurrent", segments[4][2])
+		assert.are.equal("CtrlPModeAdjacent", segments[2][2])
 
 		keymap_callback("<C-F>")()
-		assert.are.same({ { " Buffers " } }, prompt_title())
-
-		keymap_callback("<C-B>")()
-		assert.are.same({ { " Files " } }, prompt_title())
+		text = title_segments()
+		assert.are.equal(" Files < Buffers > Files ", text)
 	end)
 end)

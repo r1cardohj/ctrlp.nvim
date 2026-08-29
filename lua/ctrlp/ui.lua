@@ -82,8 +82,19 @@ local function refresh_items()
 	state.items = modes.modes[state.mode].collect(state.dir, state.config)
 end
 
+--- Prompt title showing adjacent modes around the current one, like
+--- ctrlp.vim's statusline: "prev < current > next".
 local function mode_title()
-	return " " .. modes.modes[state.mode].name .. " "
+	local prev, next_ = modes.neighbors(state.mode)
+	return {
+		{ " " },
+		{ modes.modes[prev].name, "CtrlPModeAdjacent" },
+		{ " < " },
+		{ modes.modes[state.mode].name, "CtrlPModeCurrent" },
+		{ " > " },
+		{ modes.modes[next_].name, "CtrlPModeAdjacent" },
+		{ " " },
+	}
 end
 
 --- Show the current mode name on the prompt window's border.
@@ -190,6 +201,8 @@ function M.open(config, dir, mode)
 	vim.api.nvim_win_set_option(state.win, "scrolloff", 0)
 
 	vim.api.nvim_set_hl(0, "CtrlPSelected", { link = "PmenuSel", default = true })
+	vim.api.nvim_set_hl(0, "CtrlPModeCurrent", { link = "Title", default = true })
+	vim.api.nvim_set_hl(0, "CtrlPModeAdjacent", { link = "Comment", default = true })
 
 	update_results()
 
