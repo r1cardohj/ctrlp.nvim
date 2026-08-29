@@ -76,10 +76,10 @@ describe("matcher.match_positions", function()
 	end)
 
 	it("matches greedily left to right", function()
-		--            11111111112
-		--  12345678901234567890
+		--            1111111
+		--  1234567890123456
 		-- "lua/ctrlp/ui.lua"，两个 u 取最左可行位置
-		assert.are.same({ 2, 12 }, matcher.match_positions("lua/ctrlp/ui.lua", "uu"))
+		assert.are.same({ 2, 11 }, matcher.match_positions("lua/ctrlp/ui.lua", "uu"))
 	end)
 
 	it("returns nil when the query does not match", function()
