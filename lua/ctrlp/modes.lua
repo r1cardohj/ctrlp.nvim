@@ -36,10 +36,16 @@ M.modes = {
 			return items
 		end,
 	},
+	mru = {
+		name = "MRU",
+		collect = function(dir, _)
+			return require("ctrlp.mru").list(dir)
+		end,
+	},
 }
 
 --- Cycling order of modes for <C-f> / <C-b>.
-M.order = { "files", "buffers" }
+M.order = { "files", "buffers", "mru" }
 
 --- Return the mode key after moving `delta` steps from `current`.
 --- Unknown modes are treated as the first entry.
