@@ -161,21 +161,27 @@ end)
 describe("ui mode switching", function()
 	local orig_buffers_collect
 	local orig_files_collect
+	local orig_mru_collect
 
 	before_each(function()
 		orig_buffers_collect = modes.modes.buffers.collect
 		orig_files_collect = modes.modes.files.collect
+		orig_mru_collect = modes.modes.mru.collect
 		modes.modes.buffers.collect = function()
 			return { "buffer_a.txt", "buffer_b.txt" }
 		end
 		modes.modes.files.collect = function()
 			return { "fake_file.lua" }
 		end
+		modes.modes.mru.collect = function()
+			return { "mru_recent.txt" }
+		end
 	end)
 
 	after_each(function()
 		modes.modes.buffers.collect = orig_buffers_collect
 		modes.modes.files.collect = orig_files_collect
+		modes.modes.mru.collect = orig_mru_collect
 		for _, w in ipairs(vim.api.nvim_list_wins()) do
 			if vim.api.nvim_win_is_valid(w)
 				and vim.api.nvim_win_get_config(w).relative == "editor" then
@@ -236,7 +242,13 @@ describe("ui mode switching", function()
 		assert.is_true(has_line(lines, "buffer_b.txt"))
 		assert.is_falsy(has_line(lines, "fake_file.lua"))
 
-		-- 切回 files 模式
+		-- 再切到 mru 模式
+		ctrl_f()
+		assert.is_true(has_line(result_lines(), "mru_recent.txt"))
+
+		-- 切回 buffers，再切回 files
+		ctrl_b()
+		assert.is_true(has_line(result_lines(), "buffer_a.txt"))
 		ctrl_b()
 		assert.is_true(has_line(result_lines(), "fake_file.lua"))
 	end)
@@ -267,15 +279,15 @@ describe("ui mode switching", function()
 			return table.concat(texts), t
 		end
 
-		-- 形如 " Buffers < Files > Buffers "，当前模式高亮
+		-- 形如 " MRU < Files > Buffers "，当前模式高亮
 		ui.open({}, ".")
 		local text, segments = title_segments()
-		assert.are.equal(" Buffers < Files > Buffers ", text)
+		assert.are.equal(" MRU < Files > Buffers ", text)
 		assert.are.equal("CtrlPModeCurrent", segments[4][2])
 		assert.are.equal("CtrlPModeAdjacent", segments[2][2])
 
 		keymap_callback("<C-F>")()
 		text = title_segments()
-		assert.are.equal(" Files < Buffers > Files ", text)
+		assert.are.equal(" Files < Buffers > MRU ", text)
 	end)
 end)
