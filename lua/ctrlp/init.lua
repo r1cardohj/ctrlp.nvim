@@ -26,11 +26,12 @@ function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 end
 
-function M.open()
+--- Open the finder in the given mode ("files" by default, see
+--- require("ctrlp.modes").order for available modes).
+function M.open(mode)
 	local cwd = vim.fn.getcwd()
 	local root = finder.find_root(cwd, M.config.root_markers)
-	local files = finder.scan(root, M.config)
-	ui.open(files, M.config, root)
+	ui.open(M.config, root, mode)
 end
 
 return M

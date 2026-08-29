@@ -36,8 +36,10 @@ cd ~/.config/nvim/lua && ln -s /path/to/ctrlp.nvim ./ctrlp.nvim
 | Key | Action |
 |---|---|
 | `<C-p>` or `:CtrlP` | Open file finder |
-| Type | Filter files in real time |
-| `<CR>` | Open selected file |
+| `:CtrlPBuffer` | Open buffer finder |
+| Type | Filter items in real time |
+| `<CR>` | Open selected item |
+| `<C-f>` / `<C-b>` | Switch mode (files ↔ buffers) without closing |
 | `<C-n>` / `<C-p>` | Navigate down / up |
 | `<Down>` / `<Up>` | Same as above |
 | `<F5>` | Refresh cache and rescan directory |
@@ -105,10 +107,10 @@ This project aims to be what ctrlp.vim would have been if it were born in the Ne
   - [ ] `<C-d>` — copy selected file's directory into the prompt
   - [ ] `<C-y>` — create new file (and parent directories) from the prompt
   - [x] Project root detection (`.git`, `package.json`, `go.mod`, ...)
-  - [ ] Buffer mode — switch between open buffers
+  - [x] Buffer mode — switch between open buffers
   - [ ] MRU mode — reopen recently used files
   - [ ] Mixed mode — files + buffers + MRU in one list
-  - [ ] `<C-f>` / `<C-b>` to cycle modes without closing the window
+  - [x] `<C-f>` / `<C-b>` to cycle modes without closing the window
   - [ ] `<C-x>` / `<C-v>` / `<C-t>` to open in split / vsplit / tab
 
 - **Phase 3 — polish**

@@ -1,6 +1,7 @@
 local M = {}
 
 local matcher = require("ctrlp.matcher")
+local modes = require("ctrlp.modes")
 
 local ns = vim.api.nvim_create_namespace("ctrlp")
 
@@ -9,12 +10,13 @@ local state = {
 	win = nil,
 	prompt_buf = nil,
 	prompt_win = nil,
-	files = {},
+	items = {},
 	results = {},
 	selected = 1,
 	query = "",
 	config = {},
 	dir = nil,
+	mode = "files",
 }
 
 local function close()
@@ -69,9 +71,48 @@ local function render_results()
 end
 
 local function update_results()
-	state.results = matcher.fuzzy_match(state.files, state.query)
+	state.results = matcher.fuzzy_match(state.items, state.query)
 	state.selected = 1
 	render_results()
+end
+
+--- Re-collect the item list for the current mode (used on mode switch and
+--- on manual refresh).
+local function refresh_items()
+	state.items = modes.modes[state.mode].collect(state.dir, state.config)
+end
+
+--- Prompt title showing adjacent modes around the current one, like
+--- ctrlp.vim's statusline: "prev < current > next".
+local function mode_title()
+	local prev, next_ = modes.neighbors(state.mode)
+	return {
+		{ " " },
+		{ modes.modes[prev].name, "CtrlPModeAdjacent" },
+		{ " < " },
+		{ modes.modes[state.mode].name, "CtrlPModeCurrent" },
+		{ " > " },
+		{ modes.modes[next_].name, "CtrlPModeAdjacent" },
+		{ " " },
+	}
+end
+
+--- Show the current mode name on the prompt window's border.
+local function update_mode_display()
+	if state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
+		local cfg = vim.api.nvim_win_get_config(state.prompt_win)
+		cfg.title = mode_title()
+		vim.api.nvim_win_set_config(state.prompt_win, cfg)
+	end
+end
+
+--- Switch to the next/previous mode without closing the window.
+--- The typed query is kept, like in ctrlp.vim.
+local function switch_mode(delta)
+	state.mode = modes.cycle(state.mode, delta)
+	refresh_items()
+	update_results()
+	update_mode_display()
 end
 
 local function open_file()
@@ -82,7 +123,11 @@ local function open_file()
 	-- Results are relative to the scan root (state.dir), which may differ
 	-- from the pwd when root detection kicked in. Like ctrlp.vim, resolve
 	-- the selected file against the root, not the current directory.
-	local path = state.dir .. "/" .. item
+	-- Buffer-mode items outside the root are already absolute.
+	local path = item
+	if item:sub(1, 1) ~= "/" then
+		path = state.dir .. "/" .. item
+	end
 	close()
 	vim.cmd("edit " .. vim.fn.fnameescape(path))
 end
@@ -100,13 +145,14 @@ local function move_selection(delta)
 	render_results()
 end
 
-function M.open(files, config, dir)
-	state.files = files
+function M.open(config, dir, mode)
+	state.mode = mode or "files"
 	state.config = config
 	state.dir = dir
 	state.query = ""
 	state.selected = 1
 	state.results = {}
+	refresh_items()
 
 	local width = math.floor(vim.o.columns * 0.6)
 	local height = math.floor(vim.o.lines * 0.4) - 1
@@ -143,6 +189,8 @@ function M.open(files, config, dir)
 		row = row,
 		style = "minimal",
 		border = "rounded",
+		title = mode_title(),
+		title_pos = "center",
 	})
 
 	vim.api.nvim_win_set_option(state.prompt_win, "winhl", "Normal:Normal")
@@ -153,6 +201,8 @@ function M.open(files, config, dir)
 	vim.api.nvim_win_set_option(state.win, "scrolloff", 0)
 
 	vim.api.nvim_set_hl(0, "CtrlPSelected", { link = "PmenuSel", default = true })
+	vim.api.nvim_set_hl(0, "CtrlPModeCurrent", { link = "Title", default = true })
+	vim.api.nvim_set_hl(0, "CtrlPModeAdjacent", { link = "Comment", default = true })
 
 	update_results()
 
@@ -184,12 +234,15 @@ function M.open(files, config, dir)
 		move_selection(-1)
 	end, opts)
 	vim.keymap.set("i", "<F5>", function()
-		local finder = require("ctrlp.finder")
-		finder.clear_cache()
-		state.files = finder.scan(state.dir, state.config)
-		state.results = matcher.fuzzy_match(state.files, state.query)
-		state.selected = 1
-		render_results()
+		require("ctrlp.finder").clear_cache()
+		refresh_items()
+		update_results()
+	end, opts)
+	vim.keymap.set("i", "<C-f>", function()
+		switch_mode(1)
+	end, opts)
+	vim.keymap.set("i", "<C-b>", function()
+		switch_mode(-1)
 	end, opts)
 
 	vim.api.nvim_create_autocmd("TextChangedI", {
@@ -198,9 +251,7 @@ function M.open(files, config, dir)
 			local lines = vim.api.nvim_buf_get_lines(state.prompt_buf, 0, -1, false)
 			local text = table.concat(lines, "")
 			state.query = text
-			state.results = matcher.fuzzy_match(state.files, state.query)
-			state.selected = 1
-			render_results()
+			update_results()
 		end,
 	})
 

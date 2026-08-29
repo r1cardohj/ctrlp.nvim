@@ -7,6 +7,10 @@ vim.api.nvim_create_user_command("CtrlP", function()
 	require("ctrlp").open()
 end, {})
 
+vim.api.nvim_create_user_command("CtrlPBuffer", function()
+	require("ctrlp").open("buffers")
+end, {})
+
 vim.api.nvim_create_user_command("CtrlPClearCache", function()
 	require("ctrlp.finder").clear_cache()
 	vim.notify("CtrlP cache cleared", vim.log.levels.INFO)
