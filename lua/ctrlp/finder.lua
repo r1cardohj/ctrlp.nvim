@@ -2,6 +2,20 @@ local M = {}
 
 local cache = {}
 
+--- Walk up from `start_dir` looking for any of the given root markers
+--- (e.g. ".git", "package.json", "go.mod"). Returns the directory
+--- containing the first marker found, or `start_dir` if none is found.
+function M.find_root(start_dir, markers)
+	if not markers or #markers == 0 then
+		return start_dir
+	end
+	local found = vim.fs.find(markers, { path = start_dir, upward = true })[1]
+	if found then
+		return vim.fs.dirname(found)
+	end
+	return start_dir
+end
+
 function M.scan(dir, config)
 	local real_dir = vim.loop.fs_realpath(dir) or dir
 
