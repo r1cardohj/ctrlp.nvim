@@ -48,7 +48,8 @@ cd ~/.config/nvim/lua && ln -s /path/to/ctrlp.nvim ./ctrlp.nvim
 
 ## Preview
 
-![ctrlp.nvim screenshot](assets/screenshot.png)
+<img width="1197" height="678" alt="image" src="https://github.com/user-attachments/assets/4b2414de-7ebd-41bb-8e94-9782b66171ff" />
+
 
 ## Setup
 
