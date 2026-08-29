@@ -73,4 +73,54 @@ describe("finder.scan", function()
 		local files_after_clear = finder.scan(".", config)
 		assert.are.same(files_first, files_after_clear)
 	end)
+
+	describe("hidden files", function()
+		local tmp_dir
+
+		before_each(function()
+			-- tmp/visible.txt
+			-- tmp/.hidden_file
+			-- tmp/.hidden_dir/inside.txt
+			-- tmp/.git/HEAD
+			tmp_dir = vim.fn.tempname()
+			vim.fn.mkdir(tmp_dir .. "/.hidden_dir", "p")
+			vim.fn.mkdir(tmp_dir .. "/.git", "p")
+			local f = io.open(tmp_dir .. "/visible.txt", "w")
+			f:write("v")
+			f:close()
+			f = io.open(tmp_dir .. "/.hidden_file", "w")
+			f:write("h")
+			f:close()
+			f = io.open(tmp_dir .. "/.hidden_dir/inside.txt", "w")
+			f:write("i")
+			f:close()
+			f = io.open(tmp_dir .. "/.git/HEAD", "w")
+			f:write("ref")
+			f:close()
+			finder.clear_cache()
+		end)
+
+		after_each(function()
+			vim.fn.delete(tmp_dir, "rf")
+		end)
+
+		it("should exclude dotfiles and dot-directories by default", function()
+			local files = finder.scan(tmp_dir, config)
+			assert.are.same({ "visible.txt" }, files)
+		end)
+
+		it("should include hidden files when show_hidden is true", function()
+			local show_config = vim.tbl_deep_extend("force", config, { show_hidden = true })
+			local files = finder.scan(tmp_dir, show_config)
+			local set = {}
+			for _, f in ipairs(files) do
+				set[f] = true
+			end
+			assert.is_true(set["visible.txt"])
+			assert.is_true(set[".hidden_file"])
+			assert.is_true(set[".hidden_dir/inside.txt"])
+			-- .git is still excluded by ignore_patterns
+			assert.is_falsy(set[".git/HEAD"])
+		end)
+	end)
 end)

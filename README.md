@@ -53,6 +53,7 @@ cd ~/.config/nvim/lua && ln -s /path/to/ctrlp.nvim ./ctrlp.nvim
 require("ctrlp").setup({
   max_files = 10000,
   use_cache = true,    -- keep scan results in memory for instant reopen
+  show_hidden = false, -- exclude dotfiles/dot-directories (.git, .idea, ...)
   root_markers = {     -- project root detection: search upward from cwd
     ".git",
     ".hg",

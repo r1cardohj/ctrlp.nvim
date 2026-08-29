@@ -9,6 +9,7 @@ M.version = "0.0.1"
 M.config = {
 	max_files = 10000,
 	use_cache = true,
+	show_hidden = false, -- exclude dotfiles/dot-directories (.git, .idea, ...)
 	ignore_patterns = {
 		"^%.git/",
 		"^node_modules/",
