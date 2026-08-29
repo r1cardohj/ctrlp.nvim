@@ -53,6 +53,14 @@ cd ~/.config/nvim/lua && ln -s /path/to/ctrlp.nvim ./ctrlp.nvim
 require("ctrlp").setup({
   max_files = 10000,
   use_cache = true,    -- keep scan results in memory for instant reopen
+  root_markers = {     -- project root detection: search upward from cwd
+    ".git",
+    ".hg",
+    ".svn",
+    "package.json",
+    "go.mod",
+    "Cargo.toml",
+  },
   ignore_patterns = {
     "^%.git/",
     "^node_modules/",
@@ -95,7 +103,7 @@ This project aims to be what ctrlp.vim would have been if it were born in the Ne
   - [x] Cached file list (scan once, instant reopen)
   - [ ] `<C-d>` — copy selected file's directory into the prompt
   - [ ] `<C-y>` — create new file (and parent directories) from the prompt
-  - [ ] Project root detection (`.git`, `package.json`, `go.mod`, ...)
+  - [x] Project root detection (`.git`, `package.json`, `go.mod`, ...)
   - [ ] Buffer mode — switch between open buffers
   - [ ] MRU mode — reopen recently used files
   - [ ] Mixed mode — files + buffers + MRU in one list

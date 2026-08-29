@@ -18,6 +18,7 @@ M.config = {
 		"^dist/",
 		"^build/",
 	},
+	root_markers = { ".git", ".hg", ".svn", "package.json", "go.mod", "Cargo.toml" },
 }
 
 function M.setup(opts)
@@ -26,8 +27,9 @@ end
 
 function M.open()
 	local cwd = vim.fn.getcwd()
-	local files = finder.scan(cwd, M.config)
-	ui.open(files, M.config, cwd)
+	local root = finder.find_root(cwd, M.config.root_markers)
+	local files = finder.scan(root, M.config)
+	ui.open(files, M.config, root)
 end
 
 return M
