@@ -29,8 +29,7 @@ end
 function M.open()
 	local cwd = vim.fn.getcwd()
 	local root = finder.find_root(cwd, M.config.root_markers)
-	local files = finder.scan(root, M.config)
-	ui.open(files, M.config, root)
+	ui.open(M.config, root)
 end
 
 return M
