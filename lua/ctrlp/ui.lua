@@ -63,6 +63,24 @@ local function render_results()
 		})
 	end
 
+	-- Highlight the characters matched by the query in each result line,
+	-- like ctrlp.vim's CtrlPMatch. Above the selection highlight so matched
+	-- chars stay visible on the selected line.
+	if state.query ~= "" then
+		local query = state.query:lower()
+		for i, item in ipairs(state.results) do
+			local positions = matcher.match_positions(item, query)
+			for _, pos in ipairs(positions or {}) do
+				-- line text is "  " / "> " (2 bytes) .. item
+				vim.api.nvim_buf_set_extmark(state.buf, ns, i - 1, pos + 1, {
+					end_col = pos + 2,
+					hl_group = "CtrlPMatch",
+					priority = 110,
+				})
+			end
+		end
+	end
+
 	-- Keep the selected item visible: move the window cursor to the selected
 	-- line so the floating window scrolls to follow it.
 	if state.win and vim.api.nvim_win_is_valid(state.win) then
@@ -203,6 +221,7 @@ function M.open(config, dir, mode)
 	vim.api.nvim_set_hl(0, "CtrlPSelected", { link = "PmenuSel", default = true })
 	vim.api.nvim_set_hl(0, "CtrlPModeCurrent", { link = "Title", default = true })
 	vim.api.nvim_set_hl(0, "CtrlPModeAdjacent", { link = "Comment", default = true })
+	vim.api.nvim_set_hl(0, "CtrlPMatch", { link = "Special", default = true })
 
 	update_results()
 
