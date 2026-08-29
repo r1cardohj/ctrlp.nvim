@@ -17,3 +17,5 @@ vim.api.nvim_create_user_command("CtrlPClearCache", function()
 end, {})
 
 vim.api.nvim_set_keymap("n", "<C-p>", "<Cmd>CtrlP<CR>", { noremap = true, silent = true, desc = "Open CtrlP fuzzy finder" })
+
+require("ctrlp").setup_mru_tracking()
