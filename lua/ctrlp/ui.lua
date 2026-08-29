@@ -164,6 +164,15 @@ function M.open(files, config, dir)
 	vim.keymap.set("i", "<C-p>", function()
 		move_selection(-1)
 	end, opts)
+	-- <C-j>/<C-k> would insert a newline in the prompt buffer; a newline can
+	-- never match a file path, so use them for selection movement instead
+	-- (mirrors the original ctrlp).
+	vim.keymap.set("i", "<C-j>", function()
+		move_selection(1)
+	end, opts)
+	vim.keymap.set("i", "<C-k>", function()
+		move_selection(-1)
+	end, opts)
 	vim.keymap.set("i", "<Down>", function()
 		move_selection(1)
 	end, opts)
