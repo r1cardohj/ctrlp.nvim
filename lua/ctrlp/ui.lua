@@ -82,12 +82,26 @@ local function refresh_items()
 	state.items = modes.modes[state.mode].collect(state.dir, state.config)
 end
 
+local function mode_title()
+	return " " .. modes.modes[state.mode].name .. " "
+end
+
+--- Show the current mode name on the prompt window's border.
+local function update_mode_display()
+	if state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
+		local cfg = vim.api.nvim_win_get_config(state.prompt_win)
+		cfg.title = mode_title()
+		vim.api.nvim_win_set_config(state.prompt_win, cfg)
+	end
+end
+
 --- Switch to the next/previous mode without closing the window.
 --- The typed query is kept, like in ctrlp.vim.
 local function switch_mode(delta)
 	state.mode = modes.cycle(state.mode, delta)
 	refresh_items()
 	update_results()
+	update_mode_display()
 end
 
 local function open_file()
@@ -164,6 +178,8 @@ function M.open(config, dir, mode)
 		row = row,
 		style = "minimal",
 		border = "rounded",
+		title = mode_title(),
+		title_pos = "center",
 	})
 
 	vim.api.nvim_win_set_option(state.prompt_win, "winhl", "Normal:Normal")

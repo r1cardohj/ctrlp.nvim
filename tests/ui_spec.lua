@@ -246,4 +246,25 @@ describe("ui mode switching", function()
 		assert.is_true(has_line(result_lines(), "buffer_a.txt"))
 		assert.is_falsy(has_line(result_lines(), "fake_file.lua"))
 	end)
+
+	local function prompt_title()
+		for _, w in ipairs(vim.api.nvim_list_wins()) do
+			local buf = vim.api.nvim_win_get_buf(w)
+			if vim.api.nvim_win_get_config(w).relative == "editor"
+				and vim.bo[buf].buftype == "prompt" then
+				return vim.api.nvim_win_get_config(w).title
+			end
+		end
+	end
+
+	it("shows the current mode name on the prompt window", function()
+		ui.open({}, ".")
+		assert.are.same({ { " Files " } }, prompt_title())
+
+		keymap_callback("<C-F>")()
+		assert.are.same({ { " Buffers " } }, prompt_title())
+
+		keymap_callback("<C-B>")()
+		assert.are.same({ { " Files " } }, prompt_title())
+	end)
 end)
