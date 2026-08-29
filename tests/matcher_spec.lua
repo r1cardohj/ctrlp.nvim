@@ -64,3 +64,43 @@ describe("matcher.score", function()
 		assert.is_true(score_exact > score_partial)
 	end)
 end)
+
+describe("matcher.match_positions", function()
+	it("returns matched byte positions for a simple query", function()
+		--            123456789
+		assert.are.same({ 1, 3 }, matcher.match_positions("lua/ctrlp/ui.lua", "la"))
+	end)
+
+	it("is case-insensitive", function()
+		assert.are.same({ 1, 2, 3, 4, 5, 6 }, matcher.match_positions("README.md", "readme"))
+	end)
+
+	it("matches greedily left to right", function()
+		--            11111111112
+		--  12345678901234567890
+		-- "lua/ctrlp/ui.lua"，两个 u 取最左可行位置
+		assert.are.same({ 2, 12 }, matcher.match_positions("lua/ctrlp/ui.lua", "uu"))
+	end)
+
+	it("returns nil when the query does not match", function()
+		assert.is_nil(matcher.match_positions("init.lua", "zzz"))
+		assert.is_nil(matcher.match_positions("ab", "aba"))
+	end)
+
+	it("returns empty table for empty query", function()
+		assert.are.same({}, matcher.match_positions("init.lua", ""))
+	end)
+
+	it("positions align with fuzzy_match results", function()
+		-- fuzzy_match 能匹配上的，match_positions 必须给出位置；反之亦然
+		local items = { "lua/ctrlp/init.lua", "README.md", "plugin/ctrlp.lua" }
+		for _, q in ipairs({ "init", "readme", "ctrlp", "zzz" }) do
+			for _, item in ipairs(items) do
+				local pos = matcher.match_positions(item, q)
+				local scored = matcher.score(item:lower(), q) > 0
+				assert.are.equal(scored, pos ~= nil,
+					string.format("mismatch for %q vs %q", item, q))
+			end
+		end
+	end)
+end)

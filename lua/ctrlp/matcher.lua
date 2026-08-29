@@ -1,5 +1,34 @@
 local M = {}
 
+--- Return the 1-based byte positions in `str` matched by `query`
+--- (greedy left-to-right, same scan as score()). Matching is
+--- case-insensitive; `query` is expected to be lowercase.
+--- Returns nil when the query does not match.
+function M.match_positions(str, query)
+	if query == "" or not query then
+		return {}
+	end
+	local positions = {}
+	local s_idx = 1
+	for q_idx = 1, #query do
+		local qc = query:sub(q_idx, q_idx)
+		local found = false
+		while s_idx <= #str do
+			if str:sub(s_idx, s_idx):lower() == qc then
+				table.insert(positions, s_idx)
+				s_idx = s_idx + 1
+				found = true
+				break
+			end
+			s_idx = s_idx + 1
+		end
+		if not found then
+			return nil
+		end
+	end
+	return positions
+end
+
 function M.fuzzy_match(items, query)
 	if query == "" or not query then
 		return items
